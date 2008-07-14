@@ -82,74 +82,8 @@ class PastieWindowHelper:
         
         return doc.get_text(start,end)
         
-    #MENU
-        
-    def on_pastie_activate(self, action):
-        "activates when we choose to pastie selection"
-        self._pastie_window.show()
-        self._pastie_glade.get_widget("ok_button").grab_focus()
-        
-    def on_pastie_defaults_activate(self, action):
-        pass
-    
-    
-    #GLADE WRAPPER
-    
-    def _init_glade_paste_window(self):
-        "inits paste window from glade file and sets actions"
-        self._pastie_glade = gtk.glade.XML( os.path.dirname( __file__ ) + "/PasteWindow.glade" )
-        self._pastie_window = self._pastie_glade.get_widget("PastieWindow")
-        self._pastie_window.connect("delete_event", self._hide)
-       
-        for lang in pastie.LANGS:
-            self._pastie_glade.get_widget("syntax").append_text(lang)
-        
-        self._pastie_glade.get_widget("syntax").set_active(0) #sets active posision in syntax list
-        
-        self._pastie_glade.get_widget("ok_button").connect("clicked", self._ok_button_clicked)
-        self._pastie_glade.get_widget("cancel_button").connect("clicked", lambda a: self._pastie_window.hide())
-    
-       
-    def _init_glade_inform_window(self):
-        self._inform_glade = gtk.glade.XML( os.path.dirname( __file__ ) + "/Inform.glade" )
-        self._inform_window = self._inform_glade.get_widget("InformWindow")
-        self._inform_window.connect("delete_event", self._hide)
-        self._inform_glade.get_widget("ok_button").connect("clicked", lambda a: self._inform_window.hide())
-        
-        
-    #GTK ACTIONS
-    
-    def _ok_button_clicked(self, buttin):
-        "respond to clicking ok button in paste window"
-        combox = self._pastie_glade.get_widget("syntax")
-        model = combox.get_model()
-        active = combox.get_active()
-        syntax = model[active][0]
-        priv = self._pastie_glade.get_widget("private").get_active()
-        self._pastie_window.hide()
-        self._paste(syntax, priv)
-    
-    def _hide(self, widget, event):
-        widget.hide()
-        return True
-        
-    #PASTE ACTIONS
-    
-    def _paste(self, syntax, priv):
-        "pastes selected text and displays window with link"
-        p = pastie.Pastie(self.get_selected_text(), syntax, priv)
-        entry = self._inform_glade.get_widget("link") #gets TextEntry field from inform window
-        entry.set_text("please wait")
-        self._inform_window.show() #shows window
-        entry.set_text(p.paste())
-        
-    def _paste_clipbord(self, syntax, priv):
-        "pastes selected text and copys link to clipboard"
-        clipboard = gtk.clipboard_get('CLIPBOARD')
-        p = pastie.Pastie(self.get_selected_text(), syntax, priv)
-        clipboard.set_text(p.paste())
-        clipboard.store()
 
+        
 #PLUGIN
 class PastiePlugin(gedit.Plugin):
     def __init__(self):
