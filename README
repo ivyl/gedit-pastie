@@ -1,1 +1,6 @@
 Gedit Plugin that allows you paste to pastie.org directly from editor.
+Configure it.
+See Tools menu.
+Ctrl + Shift + v - Paste to pastie.org (prefered)
+Ctrl + Shift + x - Paste to pastie.org using defaults options (see configuration).
+
