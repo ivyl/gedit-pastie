@@ -1,14 +1,15 @@
 import os
 import pastie
 import config
-import gtk
-import gtk.glade
+from gi.repository import Gtk
 
 class Window():
 
     def __init__(self, gladefile):
-        self._glade = gtk.glade.XML( os.path.dirname( __file__ ) + "/" + gladefile )
-        self._window = self._glade.get_widget("window")
+
+        self._glade = Gtk.Builder()
+        self._glade.add_from_file(os.path.join(os.path.dirname(__file__), gladefile))
+        self._window = self._glade.get_object("window")
         self._window.connect("delete_event", self._hide)
         
     def _hide(self, widget, event):
@@ -22,14 +23,16 @@ class Window():
 class PastieWindow(Window):
 
     def __init__(self,):
-        Window.__init__(self, "PasteWindow.glade")
+        Window.__init__(self, "PasteWindow.ui")
        
+        syntaxCombo = self._glade.get_object("syntax")
+
         for lang in pastie.LANGS:
-            self._glade.get_widget("syntax").append_text(lang)
+            syntaxCombo.append_text(lang)
         
-        self._glade.get_widget("syntax").set_active(0) #sets active posision in syntax list
-        self._glade.get_widget("ok_button").connect("clicked", self._ok_button)
-        self._glade.get_widget("cancel_button").connect("clicked", lambda a: self._window.hide())
+        self._glade.get_object("syntax").set_active(0) #sets active posision in syntax list
+        self._glade.get_object("ok_button").connect("clicked", self._ok_button)
+        self._glade.get_object("cancel_button").connect("clicked", lambda a: self._window.hide())
         
         self.inform = Inform()
         self.config = config.Configuration()
@@ -38,23 +41,23 @@ class PastieWindow(Window):
         self.config.call_when_configuration_changes = self.set_from_defaults
      
     def set_from_defaults(self):
-        self._glade.get_widget("syntax").set_active(config.SYNTAXES.index(self.config.syntax))
+        self._glade.get_object("syntax").set_active(config.SYNTAXES.index(self.config.syntax))
         
         if self.config.private == "True":
             to_set = True
         else:
             to_set = False
         
-        self._glade.get_widget("private").set_active(to_set)
+        self._glade.get_object("private").set_active(to_set)
         
         
     def _ok_button(self, event=None):
         text = self.get_text()
-        combox = self._glade.get_widget("syntax")
+        combox = self._glade.get_object("syntax")
         model = combox.get_model()
         active = combox.get_active()
         syntax = model[active][0]
-        priv = self._glade.get_widget("private").get_active()
+        priv = self._glade.get_object("private").get_active()
         self._window.hide()
         self._paste(syntax, priv, text, self.config.link)
         
@@ -76,14 +79,14 @@ class PastieWindow(Window):
             self.inform.show() #shows window
             self.inform.entry.set_text(paste)
         else:
-            clipboard = gtk.clipboard_get('CLIPBOARD')
+            clipboard = Gtk.clipboard_get('CLIPBOARD')
             clipboard.set_text(paste)
             clipboard.store()
 
 class Inform(Window):
 
     def __init__(self):
-        Window.__init__(self, "Inform.glade")
-        self.entry = self._glade.get_widget("link")
-        self._glade.get_widget("ok_button").connect("clicked", lambda a: self._window.hide())
+        Window.__init__(self, "Inform.ui")
+        self.entry = self._glade.get_object("link")
+        self._glade.get_object("ok_button").connect("clicked", lambda a: self._window.hide())
 
