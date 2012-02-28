@@ -1,7 +1,6 @@
 import os
 import pastie
-import gtk
-import gtk.glade
+from gi.repository import Gtk
 
 CONFIG_FILE = os.path.dirname( __file__ ) + '/config.pur'
 
@@ -13,13 +12,15 @@ class NoConfig(Exception): pass
 
 class ConfigDialog():
     def __init__(self):
-        self._glade = gtk.glade.XML( os.path.dirname( __file__ ) + "/Config.glade" )
-        self.window = self._glade.get_widget("dialog")
-        self._syntax = self._glade.get_widget("syntax")
-        self._link = self._glade.get_widget("link")
-        self._ok_button = self._glade.get_widget("ok_button")
-        self._cancel_button = self._glade.get_widget("cancel_button")
-        self._private = self._glade.get_widget("private")
+
+        self._glade = Gtk.Builder()
+        self._glade.add_from_file(os.path.join(os.path.dirname(__file__), 'Config.ui'))
+        self.window = self._glade.get_object("dialog")
+        self._syntax = self._glade.get_object("syntax")
+        self._link = self._glade.get_object("link")
+        self._ok_button = self._glade.get_object("ok_button")
+        self._cancel_button = self._glade.get_object("cancel_button")
+        self._private = self._glade.get_object("private")
         self.set_syntaxes()
         self.set_links()
         
@@ -80,9 +81,9 @@ class Configuration():
         self.call_when_configuration_changes = None
         
     def error_dialog(self):
-        dialog = gtk.MessageDialog(message_format="Error reading/writing configuration file!", 
-                                   buttons = gtk.BUTTONS_OK,
-                                   type = gtk.MESSAGE_ERROR )
+        dialog = Gtk.MessageDialog(message_format="Error reading/writing configuration file!", 
+                                   buttons = Gtk.ButtonsType.OK,
+                                   type = Gtk.MessageType.ERROR )
         dialog.set_title("Error!")
         dialog.connect("response", lambda x, y: dialog.destroy())
         dialog.run()

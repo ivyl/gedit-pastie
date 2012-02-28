@@ -1,9 +1,6 @@
 from gettext import gettext as _
 
-import gtk, gtk.glade
-import pygtk
-pygtk.require('2.0')
-import gedit
+from gi.repository import Gedit, Gtk, GObject
 import os
 import pastie
 import windows
@@ -48,7 +45,7 @@ class PastieWindowHelper:
 
     def _insert_menu(self):
         manager = self._window.get_ui_manager() #get the GtkUIManager
-        self._action_group = gtk.ActionGroup("PastieActions") #new group
+        self._action_group = Gtk.ActionGroup("PastieActions") #new group
         #menu position (from ui_str) and ctrl + shift + d shourtcut fo pastie action
         self._action_group.add_actions([("Pastie", None, _("Pastie selection"),
                                          '<Control><Shift>v', _("Pastie selection"),
@@ -80,23 +77,27 @@ class PastieWindowHelper:
         else:
             return None
 
-        return doc.get_text(start,end)
+        return doc.get_text(start,end,False)
 
 
 
 #PLUGIN
-class PastiePlugin(gedit.Plugin):
+class PastiePlugin(GObject.Object, Gedit.WindowActivatable):
+
+    window = GObject.property(type=Gedit.Window)
+
     def __init__(self):
-        gedit.Plugin.__init__(self)
+        GObject.Object.__init__(self)
+        self._instances = {}
 
-    def activate(self, window):
-        self._instances = PastieWindowHelper(self, window)
+    def do_activate(self):
+        self._instances[self.window] = PastieWindowHelper(self, self.window)
 
-    def deactivate(self, window):
-        self._instances.deactivate()
-        del self._instances
+    def do_deactivate(self):
+        if self.window in self._instances:
+            self._instances[self.window].deactivate()
 
-    def update_ui(self, window):
+    def update_ui(self):
         self._instances.update_ui()
 
     def is_configurable(self):
